@@ -16,6 +16,10 @@ public class StringMessageEvent extends Event {
         this.message = message;
     }
 
+    public StringMessageEvent(byte[] data) throws IOException {
+        super(data);
+    }
+
     @Override
     public int getType() {
         return EventProtocol.STRING_MESSAGE_EVENT;
@@ -31,7 +35,23 @@ public class StringMessageEvent extends Event {
         super.deserialize(dataInputStream);
         int messageLength = dataInputStream.readInt();
         byte[] messageData = new byte[messageLength];
-        dataInputStream.read(messageData, 0, messageLength);
+        dataInputStream.readFully(messageData, 0, messageLength);
         message = new String(messageData);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StringMessageEvent that = (StringMessageEvent) o;
+
+        return message.equals(that.message);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return message.hashCode();
     }
 }

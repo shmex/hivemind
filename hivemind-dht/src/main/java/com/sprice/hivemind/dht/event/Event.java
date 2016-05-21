@@ -42,5 +42,4 @@ public abstract class Event {
     protected void serialize(final DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeInt(getType());
     }
-
 }
