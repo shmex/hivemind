@@ -5,8 +5,10 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class StringMessageEventTest {
 
@@ -39,4 +41,16 @@ public class StringMessageEventTest {
         new StringMessageEvent(data);
     }
 
+    @Test
+    public void testSerialize() throws IOException {
+        String testString = "test message";
+        StringMessageEvent stringMessageEvent = new StringMessageEvent(testString);
+        byte[] expectedBytes = generateByteArray(EventProtocol.STRING_MESSAGE_EVENT, testString);
+        assertTrue(Arrays.equals(expectedBytes, stringMessageEvent.getData()));
+    }
+
+    @Test
+    public void testGetType() {
+        assertEquals(EventProtocol.STRING_MESSAGE_EVENT, new StringMessageEvent("bogus").getType());
+    }
 }

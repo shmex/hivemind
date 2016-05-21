@@ -20,6 +20,10 @@ public class StringMessageEvent extends Event {
         super(data);
     }
 
+    public String getMessage() {
+        return message;
+    }
+
     @Override
     public int getType() {
         return EventProtocol.STRING_MESSAGE_EVENT;
@@ -28,6 +32,8 @@ public class StringMessageEvent extends Event {
     @Override
     protected void serialize(final DataOutputStream dataOutputStream) throws IOException {
         super.serialize(dataOutputStream);
+        dataOutputStream.writeInt(message.length());
+        dataOutputStream.write(message.getBytes(), 0, message.length());
     }
 
     @Override
