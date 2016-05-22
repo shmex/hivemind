@@ -1,6 +1,8 @@
 package com.sprice.hivemind.dht.transport;
 
 import com.sprice.hivemind.dht.node.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,6 +20,7 @@ import java.util.concurrent.Future;
  */
 public class TCPServer {
 
+    private static final Logger LOG = LoggerFactory.getLogger(TCPServer.class);
     private final Node node;
     private ServerSocket serverSocket;
     private Future serverFuture;
@@ -27,8 +30,7 @@ public class TCPServer {
     }
 
     public void start(int port) {
-        if(serverFuture != null &&
-                !(serverFuture.isDone() || serverFuture.isCancelled())) {
+        if(isRunning()) {
             return;
         }
         serverFuture = node.submitTask(() -> {
@@ -41,16 +43,21 @@ public class TCPServer {
         });
     }
 
-    public void stop() {
-        if(serverFuture == null || serverFuture.isDone() || serverFuture.isCancelled()) {
-            return;
+    public void stop() throws IOException {
+        if(isRunning()) {
+            serverSocket.close();
         }
-        serverFuture.cancel(true);
+    }
+
+    public boolean isRunning() {
+        if(serverFuture == null) return false;
+        return !serverFuture.isCancelled() && !serverFuture.isDone();
     }
 
     private void listen(int port) throws IOException {
         serverSocket = new ServerSocket(port);
         while(!Thread.currentThread().isInterrupted()) {
+            LOG.debug("server listening...");
             Socket socket = serverSocket.accept();
             node.onIncomingSocketConnect(socket);
         }

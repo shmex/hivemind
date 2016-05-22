@@ -32,7 +32,7 @@ public class TCPReceiver implements Runnable {
             receive();
         } catch(Exception e) {
             // catch all, report to other thread
-            node.onError(tcpConnectionUtils.getConnectionId(socket), e);
+            node.onConnectionError(tcpConnectionUtils.getConnectionId(socket), e);
         } finally {
             close();
         }
