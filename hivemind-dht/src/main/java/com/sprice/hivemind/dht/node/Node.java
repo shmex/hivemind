@@ -1,6 +1,8 @@
 package com.sprice.hivemind.dht.node;
 
-public interface Node {
+import com.sprice.hivemind.dht.event.Event;
 
-    void onEvent();
+public interface Node {
+    void onEvent(Event event);
+    void onError(Throwable t);
 }

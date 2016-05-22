@@ -1,8 +1,14 @@
 package com.sprice.hivemind.dht.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
+
 public abstract class Event {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Event.class);
 
     public Event() {
     }
@@ -34,8 +40,10 @@ public abstract class Event {
     protected void deserialize(final DataInputStream dataInputStream) throws IOException {
         int type = dataInputStream.readInt();
         if(type != getType()) {
-            throw new IllegalArgumentException("Can not construct Event: " + getClass().getName() +
-                    ". Expected eventType: " + getType() + " but received: " + type);
+            String message = String.format("Can not construct Event: %s. Expected EventType: %d but received: %d",
+                    getClass().getName(), getType(), type);
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
         }
     }
 
