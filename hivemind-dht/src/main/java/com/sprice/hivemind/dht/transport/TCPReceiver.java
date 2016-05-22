@@ -28,8 +28,7 @@ public class TCPReceiver implements Runnable {
         try {
             receive();
         } catch(Exception e) {
-            // catch all, log and report to other thread
-            LOG.error(e.getMessage());
+            // catch all, report to other thread
             node.onError(e);
         }
     }

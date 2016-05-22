@@ -1,4 +1,4 @@
-package com.sprice.hivemind.dht.node;
+package com.sprice.hivemind.dht.transport;
 
 import com.sprice.hivemind.dht.transport.TCPSender;
 import org.junit.Before;

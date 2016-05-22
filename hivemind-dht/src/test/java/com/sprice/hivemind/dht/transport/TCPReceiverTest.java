@@ -1,13 +1,19 @@
-package com.sprice.hivemind.dht.node;
+package com.sprice.hivemind.dht.transport;
 
 import com.sprice.hivemind.dht.event.Event;
 import com.sprice.hivemind.dht.event.StringMessageEvent;
-import com.sprice.hivemind.dht.transport.TCPReceiver;
+import com.sprice.hivemind.dht.node.Node;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.Socket;
 
 import static junit.framework.TestCase.assertEquals;

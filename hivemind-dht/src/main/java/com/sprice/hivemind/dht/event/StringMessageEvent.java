@@ -1,9 +1,9 @@
 package com.sprice.hivemind.dht.event;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * Event for sending a String message.
