@@ -19,7 +19,7 @@ public class EventFactory {
     }
 
     public Event createEvent(byte[] data) throws IOException, UnsupportedEventTypeException {
-        int eventType = getIntFromBytes(Arrays.copyOfRange(data, 0, 3));
+        int eventType = getIntFromBytes(Arrays.copyOfRange(data, 0, 4));
         switch(eventType) {
             case EventProtocol.STRING_MESSAGE_EVENT: return new StringMessageEvent(data);
         }
@@ -28,6 +28,9 @@ public class EventFactory {
     }
 
     private int getIntFromBytes(byte[] intData) {
-        return 0;
+        return   intData[3] & 0xFF |
+                (intData[2] & 0xFF) << 8 |
+                (intData[1] & 0xFF) << 16 |
+                (intData[0] & 0xFF) << 24;
     }
 }
