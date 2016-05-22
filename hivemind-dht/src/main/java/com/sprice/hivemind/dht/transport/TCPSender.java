@@ -9,18 +9,20 @@ import java.net.Socket;
 public class TCPSender {
 
     private final Node node;
-    private final Socket socket;
+    private final DataOutputStream dataOutputStream;
 
-    public TCPSender(Node node, Socket socket) {
+    public TCPSender(Node node, Socket socket) throws IOException {
         this.node = node;
-        this.socket = socket;
+        this.dataOutputStream = new DataOutputStream(socket.getOutputStream());
     }
 
     public void send(byte[] data) throws IOException {
-        DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
         dataOutputStream.writeInt(data.length);
         dataOutputStream.write(data, 0, data.length);
         dataOutputStream.flush();
+    }
+
+    public void close() throws IOException {
         dataOutputStream.close();
     }
 }

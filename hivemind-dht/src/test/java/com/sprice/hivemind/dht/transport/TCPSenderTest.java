@@ -1,6 +1,5 @@
 package com.sprice.hivemind.dht.transport;
 
-import com.sprice.hivemind.dht.transport.TCPSender;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -17,18 +16,19 @@ import static org.junit.Assert.assertTrue;
 
 public class TCPSenderTest {
 
-    @InjectMocks private TCPSender tcpSender;
-    @Mock private Socket socket;
+    private TCPSender tcpSender;
+    private Socket socket;
     private ByteArrayOutputStream byteArrayOutputStream;
 
     @Before
     public void initMocks() throws IOException {
-        MockitoAnnotations.initMocks(this);
         byteArrayOutputStream = new ByteArrayOutputStream();
         mockSocket();
+        tcpSender = new TCPSender(null, socket);
     }
 
     private void mockSocket() throws IOException {
+        socket = Mockito.mock(Socket.class);
         Mockito.when(socket.getOutputStream()).thenReturn(byteArrayOutputStream);
     }
 

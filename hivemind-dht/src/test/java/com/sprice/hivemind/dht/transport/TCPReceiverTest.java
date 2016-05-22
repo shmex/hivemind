@@ -14,6 +14,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 
 import static junit.framework.TestCase.assertEquals;
@@ -22,6 +23,7 @@ public class TCPReceiverTest {
 
     @Mock private Socket socket;
     @Mock private Node node;
+    @Mock private InetAddress inetAddress;
     private PipedOutputStream pipedOutputStream;
 
     @Before
@@ -29,10 +31,17 @@ public class TCPReceiverTest {
         MockitoAnnotations.initMocks(this);
         pipedOutputStream = new PipedOutputStream();
         mockSocket();
+        mockInetAddress();
     }
 
     private void mockSocket() throws IOException {
         Mockito.when(socket.getInputStream()).thenReturn(new PipedInputStream(pipedOutputStream));
+        Mockito.when(socket.getInetAddress()).thenReturn(inetAddress);
+        Mockito.when(socket.getPort()).thenReturn(10865);
+    }
+
+    private void mockInetAddress() {
+        Mockito.when(inetAddress.getHostAddress()).thenReturn("127.0.0.1");
     }
 
     @Test
@@ -54,9 +63,11 @@ public class TCPReceiverTest {
         thread.interrupt();
         thread.join();
 
-        final ArgumentCaptor<Event> captor = ArgumentCaptor.forClass(Event.class);
-        Mockito.verify(node).onEvent(captor.capture());
+        final ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+        final ArgumentCaptor<String> connectionIdCaptor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(node).onEvent(connectionIdCaptor.capture(), eventCaptor.capture());
         StringMessageEvent expectedEvent = new StringMessageEvent(testString);
-        assertEquals(expectedEvent, captor.getValue());
+        assertEquals(expectedEvent, eventCaptor.getValue());
+        assertEquals(new TCPConnectionUtils().getConnectionId(socket), connectionIdCaptor.getValue());
     }
 }
