@@ -35,8 +35,9 @@ public class StringMessageEvent extends Event {
     @Override
     protected void serialize(final DataOutputStream dataOutputStream) throws IOException {
         super.serialize(dataOutputStream);
-        dataOutputStream.writeInt(message.length());
-        dataOutputStream.write(message.getBytes(), 0, message.length());
+        byte[] messageData = message.getBytes(EventProtocol.CHARSET);
+        dataOutputStream.writeInt(messageData.length);
+        dataOutputStream.write(messageData, 0, messageData.length);
     }
 
     @Override
@@ -45,7 +46,7 @@ public class StringMessageEvent extends Event {
         int messageLength = dataInputStream.readInt();
         byte[] messageData = new byte[messageLength];
         dataInputStream.readFully(messageData, 0, messageLength);
-        message = new String(messageData);
+        message = new String(messageData, EventProtocol.CHARSET);
     }
 
     @Override
