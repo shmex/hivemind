@@ -6,6 +6,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -52,5 +54,27 @@ public class StringMessageEventTest {
     @Test
     public void testGetType() {
         assertEquals(EventProtocol.STRING_MESSAGE_EVENT, new StringMessageEvent("bogus").getType());
+    }
+
+    @Test
+    public void testGetMessage() throws IOException {
+        String testString = "test message";
+        byte[] data = generateByteArray(EventProtocol.STRING_MESSAGE_EVENT, testString);
+        StringMessageEvent stringMessageEvent = new StringMessageEvent(data);
+        assertEquals(testString, stringMessageEvent.getMessage());
+    }
+
+    @Test
+    public void testHashCode() throws IOException {
+        String testString = "test message";
+        byte[] data = generateByteArray(EventProtocol.STRING_MESSAGE_EVENT, testString);
+        StringMessageEvent eventFromBytes = new StringMessageEvent(data);
+        StringMessageEvent eventFromString = new StringMessageEvent(testString);
+        assertEquals(eventFromBytes.hashCode(), eventFromString.hashCode());
+
+        Set<Event> events = new HashSet<>();
+        events.add(eventFromBytes);
+        events.add(eventFromString);
+        assertEquals(1, events.size());
     }
 }
