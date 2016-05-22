@@ -1,8 +1,13 @@
 package com.sprice.hivemind.dht.event;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 public abstract class Event {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Event.class);
 
     public Event() {
     }
@@ -32,6 +37,7 @@ public abstract class Event {
     }
 
     protected void deserialize(final DataInputStream dataInputStream) throws IOException {
+        LOG.debug("deserializing...");
         int type = dataInputStream.readInt();
         if(type != getType()) {
             throw new IllegalArgumentException("Can not construct Event: " + getClass().getName() +
@@ -40,6 +46,7 @@ public abstract class Event {
     }
 
     protected void serialize(final DataOutputStream dataOutputStream) throws IOException {
+        LOG.debug("serializing...");
         dataOutputStream.writeInt(getType());
     }
 }
