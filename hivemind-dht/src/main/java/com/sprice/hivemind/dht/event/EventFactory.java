@@ -10,15 +10,21 @@ import java.util.Arrays;
 public class EventFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventFactory.class);
+    private static final EventFactory instance = new EventFactory();
+
+    private EventFactory() {}
+
+    public static EventFactory getInstance() {
+        return instance;
+    }
 
     public Event createEvent(byte[] data) throws IOException, UnsupportedEventTypeException {
         int eventType = getIntFromBytes(Arrays.copyOfRange(data, 0, 3));
-        LOG.debug("Creating event of type: " + eventType);
         switch(eventType) {
             case EventProtocol.STRING_MESSAGE_EVENT: return new StringMessageEvent(data);
         }
 
-        throw new UnsupportedEventTypeException("Unsupported event type: " + eventType);
+        throw new UnsupportedEventTypeException("Unsupported EventType: " + eventType);
     }
 
     private int getIntFromBytes(byte[] intData) {

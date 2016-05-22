@@ -37,16 +37,16 @@ public abstract class Event {
     }
 
     protected void deserialize(final DataInputStream dataInputStream) throws IOException {
-        LOG.debug("deserializing...");
         int type = dataInputStream.readInt();
         if(type != getType()) {
-            throw new IllegalArgumentException("Can not construct Event: " + getClass().getName() +
-                    ". Expected eventType: " + getType() + " but received: " + type);
+            String message = String.format("Can not construct Event: %s. Expected EventType: %d but received: %d",
+                    getClass().getName(), getType(), type);
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
         }
     }
 
     protected void serialize(final DataOutputStream dataOutputStream) throws IOException {
-        LOG.debug("serializing...");
         dataOutputStream.writeInt(getType());
     }
 }
