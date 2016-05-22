@@ -19,7 +19,7 @@ public class TCPConnection {
         connectionId = new TCPConnectionUtils().getConnectionId(socket);
         tcpSender = new TCPSender(node, socket);
         tcpReceiver = new TCPReceiver(node, socket);
-        receiverFuture = node.getThreadPool().submit(tcpReceiver);
+        receiverFuture = node.submitTask(tcpReceiver);
     }
 
     public String getConnectionId() {

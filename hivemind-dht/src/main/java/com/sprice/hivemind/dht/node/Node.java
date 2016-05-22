@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public abstract class Node {
 
@@ -56,7 +57,12 @@ public abstract class Node {
         this.server.start(port);
     }
 
-    public ExecutorService getThreadPool() {
-        return threadPool;
+    public void stopServer() {
+        LOG.info("stopping server");
+        this.server.stop();
+    }
+
+    public Future submitTask(Runnable task) {
+        return threadPool.submit(task);
     }
 }

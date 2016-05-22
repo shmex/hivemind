@@ -31,7 +31,7 @@ public class TCPServer {
                 !(serverFuture.isDone() || serverFuture.isCancelled())) {
             return;
         }
-        serverFuture = node.getThreadPool().submit(() -> {
+        serverFuture = node.submitTask(() -> {
             try {
                 listen(port);
             } catch(IOException e) {
