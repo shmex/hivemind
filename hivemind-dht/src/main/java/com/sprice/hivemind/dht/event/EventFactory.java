@@ -27,7 +27,7 @@ public class EventFactory {
         throw new UnsupportedEventTypeException("Unsupported EventType: " + eventType);
     }
 
-    private int getIntFromBytes(byte[] intData) {
+    protected int getIntFromBytes(byte[] intData) {
         return   intData[3] & 0xFF |
                 (intData[2] & 0xFF) << 8 |
                 (intData[1] & 0xFF) << 16 |
