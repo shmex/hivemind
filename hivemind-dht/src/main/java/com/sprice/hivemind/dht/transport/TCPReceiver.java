@@ -17,19 +17,32 @@ public class TCPReceiver implements Runnable {
     private final Socket socket;
     private final DataInputStream dataInputStream;
     private final EventFactory eventFactory = EventFactory.getInstance();
+    private final TCPConnectionUtils tcpConnectionUtils;
 
     public TCPReceiver(Node node, Socket socket) throws IOException {
         this.node = node;
         this.socket = socket;
         this.dataInputStream = new DataInputStream(socket.getInputStream());
+        this.tcpConnectionUtils = new TCPConnectionUtils();
     }
 
+    @Override
     public void run() {
         try {
             receive();
         } catch(Exception e) {
             // catch all, report to other thread
-            node.onError(new TCPConnectionUtils().getConnectionId(socket), e);
+            node.onError(tcpConnectionUtils.getConnectionId(socket), e);
+        } finally {
+            close();
+        }
+    }
+
+    private void close() {
+        try {
+            dataInputStream.close();
+        } catch(IOException e) {
+            LOG.error("failed to close receiver's DataInputStream because: " + e.getMessage());
         }
     }
 
@@ -38,7 +51,8 @@ public class TCPReceiver implements Runnable {
             int dataLength = dataInputStream.readInt();
             byte[] data = new byte[dataLength];
             dataInputStream.readFully(data, 0, dataLength);
-            node.onEvent(eventFactory.createEvent(data));
+            node.onEvent(tcpConnectionUtils.getConnectionId(socket), eventFactory.createEvent(data));
         }
     }
+
 }

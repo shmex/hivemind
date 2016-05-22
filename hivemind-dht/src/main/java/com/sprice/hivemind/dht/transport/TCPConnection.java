@@ -5,17 +5,21 @@ import com.sprice.hivemind.dht.node.Node;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 public class TCPConnection {
 
     private final String connectionId;
     private final TCPSender tcpSender;
     private final TCPReceiver tcpReceiver;
+    private final Future receiverFuture;
 
     public TCPConnection(Node node, Socket socket) throws IOException {
         connectionId = new TCPConnectionUtils().getConnectionId(socket);
         tcpSender = new TCPSender(node, socket);
         tcpReceiver = new TCPReceiver(node, socket);
+        receiverFuture = node.submitTask(tcpReceiver);
     }
 
     public String getConnectionId() {
@@ -24,6 +28,12 @@ public class TCPConnection {
 
     public void send(Event event) throws IOException {
         tcpSender.send(event.getData());
+    }
+
+    public void close() throws IOException {
+        // receiver closes itself when cancelled
+        receiverFuture.cancel(true);
+        tcpSender.close();
     }
 
     @Override

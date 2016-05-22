@@ -5,33 +5,54 @@ import com.sprice.hivemind.dht.node.Node;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.Future;
 
-public class TCPServer implements Runnable {
+/**
+ * Self managed, restartable server
+ * Registers against a node
+ *
+ * Note: the server thread performs the
+ * node's onIncomingSocketConnect work.
+ * This means the server will not actively
+ * listen until that work is done.
+ */
+public class TCPServer {
 
     private final Node node;
-    private final int port;
     private ServerSocket serverSocket;
+    private Future serverFuture;
 
-    public TCPServer(Node node, int port) {
+    public TCPServer(Node node) {
         this.node = node;
-        this.port = port;
     }
 
-    @Override
-    public void run() {
-        try {
-            listen();
-        } catch(IOException e) {
-            // catch all and report to handler
-            node.onServerError(e);
+    public void start(int port) {
+        if(serverFuture != null &&
+                !(serverFuture.isDone() || serverFuture.isCancelled())) {
+            return;
         }
+        serverFuture = node.submitTask(() -> {
+            try {
+                listen(port);
+            } catch(IOException e) {
+                // catch all and report to handler
+                node.onServerError(e);
+            }
+        });
     }
 
-    private void listen() throws IOException {
+    public void stop() {
+        if(serverFuture == null || serverFuture.isDone() || serverFuture.isCancelled()) {
+            return;
+        }
+        serverFuture.cancel(true);
+    }
+
+    private void listen(int port) throws IOException {
         serverSocket = new ServerSocket(port);
         while(!Thread.currentThread().isInterrupted()) {
             Socket socket = serverSocket.accept();
-            node.onIncommingSocketConnect(socket);
+            node.onIncomingSocketConnect(socket);
         }
     }
 }
