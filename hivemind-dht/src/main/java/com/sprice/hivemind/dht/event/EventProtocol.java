@@ -21,7 +21,9 @@ public interface EventProtocol {
     int SHUTDOWN_START_EVENT = 11;
     int SHUTDOWN_COMPLETE_EVENT = 12;
     int SUBMIT_TASK_EVENT = 13;
+    int EVENT_HANDLER_REGISTRATION_EVENT = 14;
+    int EVENT_HANDLER_UNREGISTRATION_EVENT =15;
 
     /* Custom Events */
-    int STRING_MESSAGE_EVENT = 14;
+    int STRING_MESSAGE_EVENT = 16;
 }

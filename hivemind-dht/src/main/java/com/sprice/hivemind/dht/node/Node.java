@@ -91,6 +91,14 @@ public abstract class Node implements EventHandler {
         return future;
     }
 
+    public void registerEventHandler(EventHandler eventHandler) {
+        eventHandlerRegistrar.registerEventHandler(eventHandler);
+    }
+
+    public void unregisterEventHandler(EventHandler eventHandler) {
+        eventHandlerRegistrar.unregisterEventHandler(eventHandler);
+    }
+
     private void closeAllConnections() {
         for(TCPConnection connection : connections.getAll()) {
             try {
