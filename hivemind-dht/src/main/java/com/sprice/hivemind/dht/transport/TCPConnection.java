@@ -10,13 +10,14 @@ import java.util.concurrent.Future;
 
 public class TCPConnection {
 
+    private final TCPConnectionUtils tcpConnectionUtils = TCPConnectionUtils.getInstance();
     private final String connectionId;
     private final TCPSender tcpSender;
     private final TCPReceiver tcpReceiver;
     private final Future receiverFuture;
 
     public TCPConnection(Node node, Socket socket) throws IOException {
-        connectionId = new TCPConnectionUtils().getConnectionId(socket);
+        connectionId = tcpConnectionUtils.getConnectionId(socket);
         tcpSender = new TCPSender(node, socket);
         tcpReceiver = new TCPReceiver(node, socket);
         receiverFuture = node.submitTask(tcpReceiver);

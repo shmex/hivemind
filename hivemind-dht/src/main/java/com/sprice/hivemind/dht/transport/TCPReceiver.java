@@ -3,6 +3,7 @@ package com.sprice.hivemind.dht.transport;
 import com.sprice.hivemind.dht.event.EventFactory;
 import com.sprice.hivemind.dht.event.exception.UnsupportedEventTypeException;
 import com.sprice.hivemind.dht.node.Node;
+import com.sprice.hivemind.dht.transport.event.ConnectionErrorEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,17 +14,16 @@ import java.net.Socket;
 public class TCPReceiver implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(TCPReceiver.class);
+    private final TCPConnectionUtils tcpConnectionUtils = TCPConnectionUtils.getInstance();
+    private final EventFactory eventFactory = EventFactory.getInstance();
     private final Node node;
     private final Socket socket;
     private final DataInputStream dataInputStream;
-    private final EventFactory eventFactory = EventFactory.getInstance();
-    private final TCPConnectionUtils tcpConnectionUtils;
 
     public TCPReceiver(Node node, Socket socket) throws IOException {
         this.node = node;
         this.socket = socket;
         this.dataInputStream = new DataInputStream(socket.getInputStream());
-        this.tcpConnectionUtils = new TCPConnectionUtils();
     }
 
     @Override
@@ -32,7 +32,8 @@ public class TCPReceiver implements Runnable {
             receive();
         } catch(Exception e) {
             // catch all, report to other thread
-            node.onError(tcpConnectionUtils.getConnectionId(socket), e);
+            String connectionId = tcpConnectionUtils.getConnectionId(socket);
+            node.onEvent(new ConnectionErrorEvent(connectionId, e));
         } finally {
             close();
         }
@@ -51,7 +52,7 @@ public class TCPReceiver implements Runnable {
             int dataLength = dataInputStream.readInt();
             byte[] data = new byte[dataLength];
             dataInputStream.readFully(data, 0, dataLength);
-            node.onEvent(tcpConnectionUtils.getConnectionId(socket), eventFactory.createEvent(data));
+            node.onEvent(eventFactory.createEvent(data)); // todo add connection details
         }
     }
 
