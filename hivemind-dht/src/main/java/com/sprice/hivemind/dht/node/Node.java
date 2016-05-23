@@ -1,9 +1,16 @@
 package com.sprice.hivemind.dht.node;
 
 import com.sprice.hivemind.dht.event.Event;
+import com.sprice.hivemind.dht.event.EventHandler;
+import com.sprice.hivemind.dht.event.EventHandlerRegistrar;
+import com.sprice.hivemind.dht.node.event.SubmitTaskEvent;
 import com.sprice.hivemind.dht.transport.TCPConnection;
 import com.sprice.hivemind.dht.transport.TCPConnectionCache;
 import com.sprice.hivemind.dht.transport.TCPServer;
+import com.sprice.hivemind.dht.transport.event.OutgoingConnectionEvent;
+import com.sprice.hivemind.dht.transport.event.SendEvent;
+import com.sprice.hivemind.dht.node.event.ShutdownCompleteEvent;
+import com.sprice.hivemind.dht.node.event.ShutdownStartEvent;
 import com.sprice.hivemind.dht.transport.exception.ConnectionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,54 +27,38 @@ import java.util.concurrent.TimeUnit;
  * Manages incoming and outgoing connections
  * also performs event routing
  */
-public abstract class Node {
+public abstract class Node implements EventHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(Node.class);
-    private final TCPConnectionCache connections;
+    protected final TCPConnectionCache connections;
+    private final EventHandlerRegistrar eventHandlerRegistrar;
     private final ExecutorService threadPool;
     private final TCPServer server;
 
-    public Node(int threadPoolSize) {
+    public Node(int threadPoolSize, NodeEventHandler nodeEventHandler) {
         this.connections = new TCPConnectionCache();
+        this.eventHandlerRegistrar = new EventHandlerRegistrar();
         this.threadPool = Executors.newFixedThreadPool(threadPoolSize);
         this.server = new TCPServer(this);
+
+        nodeEventHandler.registerNode(this);
+        this.eventHandlerRegistrar.registerEventHandler(nodeEventHandler);
     }
 
-    public abstract void onEvent(String connectionId, Event event);
-
-    public void onConnectionError(String connectionId, Throwable t) {
-        try {
-            connections.remove(connectionId);
-            LOG.info("client disconnected: " + connectionId + " because: " + t.getMessage());
-        } catch (ConnectionNotFoundException e) {
-            LOG.error("onConnectionError received nonexistent connectionId: " + connectionId);
-        }
-    }
-
-    public void onServerError(Throwable t) {
-        LOG.info("server stopped because: " + t.getMessage());
-    }
-
-    public void onIncomingSocketConnect(Socket socket) {
-        try {
-            TCPConnection connection = new TCPConnection(this, socket);
-            connections.add(connection);
-            LOG.info("client connected: " + connection.getConnectionId());
-        } catch(IOException e) {
-            LOG.error("could not create TCPConnection from socket because: " + e.getMessage());
+    public void onEvent(Event event) {
+        for(EventHandler eventHandler : eventHandlerRegistrar.getAll()) {
+            eventHandler.onEvent(event);
         }
     }
 
     public void startServer(int port) {
         if(!server.isRunning()) {
-            LOG.info("starting server on port: " + port);
             this.server.start(port);
         }
     }
 
     public void stopServer() {
         if(server.isRunning()) {
-            LOG.info("stopping server");
             try {
                 this.server.stop();
             } catch(IOException e) {
@@ -76,27 +67,28 @@ public abstract class Node {
         }
     }
 
-    public TCPConnection connect(InetAddress inetAddress, int port) throws IOException {
+    public void connect(InetAddress inetAddress, int port) throws IOException {
         Socket socket = new Socket(inetAddress, port);
-        TCPConnection connection = new TCPConnection(this, socket);
-        connections.add(connection);
-        return connection;
+        this.onEvent(new OutgoingConnectionEvent(socket));
     }
 
     public void send(String connectionId, Event event) throws ConnectionNotFoundException, IOException {
         connections.get(connectionId).send(event);
+        this.onEvent(new SendEvent(event));
     }
 
     public void shutdown() {
-        LOG.info("shutting down...");
+        this.onEvent(new ShutdownStartEvent(System.currentTimeMillis()));
         stopServer();
         closeAllConnections();
         shutdownThreadPool();
-        LOG.info("shutdown " + (threadPool.isShutdown() ? "complete" : "failed") + ".");
+        this.onEvent(new ShutdownCompleteEvent(System.currentTimeMillis()));
     }
 
     public Future submitTask(Runnable task) {
-        return threadPool.submit(task);
+        Future future = threadPool.submit(task);
+        this.onEvent(new SubmitTaskEvent(task, future));
+        return future;
     }
 
     private void closeAllConnections() {

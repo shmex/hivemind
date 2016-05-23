@@ -20,8 +20,8 @@ public class Application {
         Registry registry = new Registry();
         registry.startServer(10865);
 
-        //Worker worker = new Worker();
-        //worker.connect(InetAddress.getLocalHost(), 10865);
+        Worker worker = new Worker();
+        worker.connect(InetAddress.getLocalHost(), 10865);
 
         Scanner keyboard = new Scanner(System.in);
         String command = keyboard.nextLine();
@@ -30,7 +30,7 @@ public class Application {
             }
             command = keyboard.nextLine();
         }
-        //worker.shutdown();
+        worker.shutdown();
         registry.shutdown();
     }
 }
